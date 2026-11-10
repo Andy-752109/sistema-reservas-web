@@ -8,7 +8,7 @@ Cada PR apunta a `develop` y cierra su issue con `Closes Andy-752109/sistema-res
 
 ## Puesta en marcha local
 
-**Requisitos:** Node.js 20 o posterior y npm.
+**Requisitos:** Node.js 22 (22.22.2 o posterior) o Node.js 24 (24.15 o posterior), y npm.
 
 ```bash
 git clone https://github.com/Andy-752109/sistema-reservas-web.git
