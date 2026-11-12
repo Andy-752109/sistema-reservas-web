@@ -41,3 +41,17 @@ La URL de la API, el ambiente y la versión **no** se fijan al compilar: se leen
 | Contenedor | Lo genera `docker/40-generar-config.sh` al iniciar, con las variables `API_URL`, `AMBIENTE` y `APP_VERSION` |
 
 El ambiente y la versión se muestran en el pie de página.
+
+## Contenedor
+
+El `Dockerfile` compila con Node 22 y sirve `dist/` con **nginx 1.30 (alpine)** en el puerto 80, el mismo `WEBSITES_PORT` que configura Terraform en Azure. `docker/nginx.conf` agrega el fallback de SPA (cualquier ruta carga `index.html`), `no-store` para `config.js` y caché larga para `assets/`.
+
+```bash
+docker build -t reservas-web:local .
+docker run --rm -p 8080:80 \
+  -e API_URL=http://localhost:3000 -e AMBIENTE=LOCAL -e APP_VERSION=dev \
+  reservas-web:local
+# http://localhost:8080
+```
+
+El workflow **Docker** construye la imagen para `linux/amd64` en cada PR, sin publicarla; el CD (#53) la publica en Docker Hub como `<usuario>/reservas-web`.
