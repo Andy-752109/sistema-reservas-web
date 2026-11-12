@@ -19,6 +19,10 @@ npm run dev
 
 La aplicación queda en <http://localhost:5173>.
 
+## Integración continua
+
+El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada PR hacia `develop` o `main`, en cada push a `main` y a mano. Ejecuta `npm ci`, `npm run lint`, `npm test` y `npm run build` con Node 22. Los resultados de las pruebas se publican como el check **Resultados de pruebas (Vitest)** y se guardan 14 días como artefacto `reportes-pruebas`.
+
 ## Comandos
 
 | Comando | Qué hace |
