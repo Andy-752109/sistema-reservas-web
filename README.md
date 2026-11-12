@@ -31,3 +31,13 @@ El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada
 | `npm run build` | Compila TypeScript y genera la versión de producción en `dist/` |
 | `npm run lint` | Revisa el código con ESLint |
 | `npm test` | Corre las pruebas unitarias con Vitest |
+## Configuración por ambiente
+
+La URL de la API, el ambiente y la versión **no** se fijan al compilar: se leen al abrir la página desde `config.js`. Así la misma imagen de Docker sirve en Dev y en Prod.
+
+| Dónde | De dónde sale `config.js` |
+|-------|---------------------------|
+| Desarrollo local | `public/config.js` (API en `http://localhost:3000`, ambiente `LOCAL`) |
+| Contenedor | Lo genera `docker/40-generar-config.sh` al iniciar, con las variables `API_URL`, `AMBIENTE` y `APP_VERSION` |
+
+El ambiente y la versión se muestran en el pie de página.
