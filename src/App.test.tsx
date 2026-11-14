@@ -1,14 +1,16 @@
 import { afterEach, expect, test, vi } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
+import { pedir } from './api/cliente'
 import App from './App'
 import { guardarToken } from './auth/sesion'
 import { crearToken, respuestaJson, simularFetch } from './test/utilidades'
 
 afterEach(() => {
-  cleanup()
-  localStorage.clear()
-  vi.unstubAllGlobals()
+    vi.useRealTimers()
+    cleanup()
+    localStorage.clear()
+    vi.unstubAllGlobals()
 })
 
 function abrirEn(ruta: string) {
@@ -100,4 +102,25 @@ test('el registro crea la cuenta con POST /usuarios e inicia sesión', async () 
     'http://localhost:3000/usuarios',
     'http://localhost:3000/login',
   ])
+})
+
+test('si el token vence con la app abierta, una petición protegida regresa al login', async () => {
+  const ahora = Date.now()
+  guardarToken(crearToken({ sub: 3, rol: 'ESTUDIANTE', exp: Math.floor(ahora / 1000) + 60 }))
+  abrirEn('/')
+  expect(screen.getByText('Sesión iniciada como estudiante.')).toBeTruthy()
+
+  // Pasan 2 minutos: el token ya venció, pero la pantalla sigue abierta.
+  vi.useFakeTimers({ toFake: ['Date'] })
+  vi.setSystemTime(ahora + 120_000)
+  const fetch = simularFetch(respuestaJson({ statusCode: 401, message: 'Unauthorized' }, 401))
+
+  await act(async () => {
+    await pedir('/reservas').catch(() => undefined)
+  })
+
+  expect(screen.getByRole('heading', { name: 'Iniciar sesión' })).toBeTruthy()
+  expect(screen.queryByRole('button', { name: 'Cerrar sesión' })).toBeNull()
+  expect(localStorage.length).toBe(0)
+  expect(new Headers(fetch.mock.calls[0][1]?.headers).has('Authorization')).toBe(false)
 })

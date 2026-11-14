@@ -2,6 +2,7 @@
 // El JWT de la API trae `sub` (id del usuario), `rol` y `exp` (expiración en segundos).
 
 const CLAVE = 'reservas.token'
+export const EVENTO_SESION_EXPIRADA = 'reservas:sesion-expirada'
 
 export type Rol = 'ESTUDIANTE' | 'DOCENTE' | 'ADMIN'
 
@@ -24,6 +25,7 @@ export function obtenerToken(): string | null {
   if (!token) return null
   if (!leerUsuario(token)) {
     borrarToken()
+    window.dispatchEvent(new Event(EVENTO_SESION_EXPIRADA))
     return null
   }
   return token

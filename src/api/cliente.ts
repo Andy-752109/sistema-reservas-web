@@ -1,5 +1,7 @@
 import { obtenerConfig } from '../config'
-import { borrarToken, obtenerToken } from '../auth/sesion'
+import { borrarToken, EVENTO_SESION_EXPIRADA, obtenerToken } from '../auth/sesion'
+
+export { EVENTO_SESION_EXPIRADA }
 
 // Error de la API con el código HTTP y un mensaje listo para mostrar al usuario.
 export class ErrorApi extends Error {
@@ -11,9 +13,6 @@ export class ErrorApi extends Error {
     this.status = status
   }
 }
-
-// Evento que avisa a la app que el token ya no sirve y hay que volver al login.
-export const EVENTO_SESION_EXPIRADA = 'reservas:sesion-expirada'
 
 // Hace una petición a la API: agrega la URL base del ambiente, el JSON
 // y el encabezado Authorization: Bearer cuando hay sesión.
