@@ -21,7 +21,7 @@ La aplicación queda en <http://localhost:5173>.
 
 ## Integración continua
 
-El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada PR hacia `develop` o `main`, en cada push a `main` y a mano. Ejecuta `npm ci`, `npm run lint`, `npm test` y `npm run build` con Node 22. Los resultados de las pruebas se publican como el check **Resultados de pruebas (Vitest)** y se guardan 14 días como artefacto `reportes-pruebas`.
+El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada PR hacia `develop` o `main`, a mano y como primer paso del CD. Ejecuta `npm ci`, `npm run lint`, `npm test` y `npm run build` con Node 22. Los resultados de las pruebas se publican como el check **Resultados de pruebas (Vitest)** y se guardan 14 días como artefacto `reportes-pruebas`.
 
 ## Comandos
 
@@ -56,50 +56,66 @@ docker run --rm -p 8080:80 \
 
 El workflow **Docker** construye la imagen para `linux/amd64` en cada PR, sin publicarla; el CD (#53) la publica en Docker Hub como `<usuario>/reservas-web`.
 
-## Mis reservas — preparación del issue #38
+## Mis reservas — issue #38
 
-`src/pages/MisReservas.tsx` prepara el historial personal con carga, lista vacía,
-errores con reintento y estados ACTIVA, CANCELADA y FINALIZADA. Muestra el espacio
-por su identificador (la respuesta de reservas no incluye el nombre) y los horarios
-en `America/Mexico_City`. Solo ofrece cancelar reservas ACTIVAS, pide confirmación,
-impide envíos duplicados y conserva la fila con el estado devuelto por el servidor.
-Un error al cancelar mantiene el estado previo y permite reintentar.
+La ruta protegida `/mis-reservas`, accesible desde la navegación de la sesión,
+lista el historial del usuario y permite cancelar reservas ACTIVAS con confirmación.
+Consume `GET /reservas` y `DELETE /reservas/:id` mediante el cliente `pedir` del login
+(#34 / PR Web #6), que configura la URL por ambiente, envía Bearer y limpia la sesión
+ante un 401. Sin sesión se redirige a login y, al ingresar, se regresa al historial.
 
-`src/reservas/api-reservas.ts` consume `GET /reservas` y `DELETE /reservas/:id`
-mediante una función `pedir` compatible con el cliente del login #34 / PR Web #6.
-La pantalla recibe `usuarioId` de la sesión y limita la lista a sus reservas;
-esto también se aplica a ADMIN, a quien la API devuelve todas las reservas.
-El filtrado visual no sustituye los permisos de propiedad que verifica el backend.
+La pantalla obtiene `usuarioId` del contexto de autenticación, también para ADMIN:
+la API le devuelve todas las reservas, pero “Mis reservas” muestra solo las suyas.
+El backend sigue verificando permisos y propiedad en cada operación.
 
-**Integración pendiente:** al preparar esta rama desde `develop`, el PR Web #6
-todavía no está fusionado. No se duplica el login ni se altera `App.tsx`: esta
-pantalla aún no está conectada al router ni accesible en la aplicación principal.
-El issue #38 no está terminado hasta integrar y probar el flujo autenticado.
+Se muestran los estados ACTIVA, CANCELADA y FINALIZADA, el identificador del espacio
+(la API no incluye su nombre en esta respuesta) y los horarios en
+`America/Mexico_City`. Incluye carga, lista vacía, reintentos y errores. Al cancelar,
+bloquea envíos duplicados, conserva la fila y usa el estado devuelto por la API.
+Si la petición falla, mantiene el estado previo y permite reintentar.
 
-Después de fusionar el #6 y actualizar esta rama, reutilizar su cliente y contexto:
+El adaptador se crea una sola vez en `PaginaMisReservas.tsx`. Al salir o cambiar de
+cuenta se abortan las peticiones y se ignoran respuestas antiguas. Los estilos
+reutilizan las variables de la aplicación y la navegación admite pantallas pequeñas.
 
-```tsx
-import { pedir } from './api/cliente'
-import { useAuth } from './auth/AuthContext'
-import MisReservas from './pages/MisReservas'
-import { crearApiReservas } from './reservas/api-reservas'
+`npm test` cubre el componente, el adaptador y la integración del router, sesión y
+cliente HTTP con respuestas controladas: login y regreso al historial, URL runtime,
+Bearer, listado personal, cancelación, 401, 403, cierre de sesión y expiración local.
+Estas pruebas no usan cuentas ni alteran reservas en Azure.
 
-// Mantener la identidad del adaptador estable entre renders.
-const apiReservas = crearApiReservas(pedir)
+La prueba opcional `src/MisReservas.local.test.tsx` usa peticiones HTTP reales y
+se omite por defecto. Requiere una API local contra una base temporal migrada y
+un espacio activo sin reservas en el intervalo de prueba. Crea una cuenta y una
+reserva de prueba, inicia sesión desde el formulario, cancela desde el historial
+y verifica el estado persistido. Al terminar debe eliminarse la base temporal;
+no debe apuntarse a la base de desarrollo habitual. Solo admite HTTP en localhost.
 
-function PaginaMisReservas() {
-  const { usuario } = useAuth()
-  if (!usuario) return null
-  return <MisReservas api={apiReservas} usuarioId={usuario.id} />
-}
+Ejemplo en PowerShell, después de preparar la API y la base desechable:
+
+```powershell
+$env:PRUEBA_API_LOCAL_URL='http://127.0.0.1:4308'
+$env:PRUEBA_ESPACIO_ID='1' # ID real del espacio en esa base temporal
+npm.cmd test -- src/MisReservas.local.test.tsx
+Remove-Item Env:PRUEBA_API_LOCAL_URL, Env:PRUEBA_ESPACIO_ID
 ```
 
-Registrar `/mis-reservas` dentro de `RutaPrivada` y añadir un enlace en la navegación
-de la sesión. `pedir` conserva la responsabilidad de configurar la URL runtime,
-enviar Bearer y cerrar la sesión ante 401. Al desmontar la pantalla o cambiar de
-cuenta se abortan las peticiones y se ignoran respuestas antiguas.
+## Sesión y rutas
 
-Pruebas: `npm test` cubre la pantalla con un servicio controlado y el contrato del
-adaptador; no usa cuentas ni modifica reservas en Azure. La integración posterior
-debe comprobar redirección al login, Bearer, listado propio y cancelación en una
-base local o de pruebas con datos desechables, nunca usando reservas reales de Prod.
+- `/login` y `/registro` son públicas. Las demás rutas pasan por `RutaPrivada`: sin sesión, mandan al login y después regresan a donde iba el usuario.
+- `POST /login` devuelve un JWT que se guarda en `localStorage` (`reservas.token`). Todas las peticiones de `src/api/cliente.ts` lo envían como `Authorization: Bearer`.
+- Si la API responde 401, la sesión se cierra sola y se vuelve al login. El token también se descarta al vencer (`exp`).
+- El registro (`POST /usuarios`) siempre crea un estudiante e inicia sesión enseguida.
+
+## Despliegue continuo
+
+Cada liberación a `main` dispara [`.github/workflows/cd.yml`](.github/workflows/cd.yml):
+
+```
+push a main ─► Build y pruebas ─► Imagen Docker (tag del SHA) ─► Dev + smoke test
+                                                               └─► aprobación manual ─► Prod + smoke test
+```
+
+- Dev y Prod reciben **la misma imagen**; `API_URL` y `AMBIENTE` son app settings de cada Web App (Terraform) y `APP_VERSION` es el SHA corto del commit, que aparece en el pie de página.
+- Prod espera la aprobación de un integrante (environment `production`).
+- El smoke test exige que `config.js` tenga la versión, el ambiente y la API correctos, que la SPA responda en `/` y `/login`, y que la API del mismo ambiente esté arriba y acepte este origen por CORS.
+- Azure se autentica con OIDC, sin contraseñas guardadas en GitHub.

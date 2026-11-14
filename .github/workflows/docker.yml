@@ -1,6 +1,6 @@
 # Imagen Docker del frontend (nginx).
 # - En cada PR: construye para linux/amd64 (la arquitectura de App Service) sin publicar.
-# - A mano (workflow_dispatch) o llamado por el CD (#50): construye y publica en Docker Hub
+# - A mano (workflow_dispatch) o llamado por el CD (#53): construye y publica en Docker Hub
 #   con el SHA corto del commit y con latest. Dev y Prod despliegan siempre el tag del SHA.
 name: Docker
 
