@@ -1,4 +1,5 @@
-# CI del frontend: se ejecuta en cada PR hacia develop o main y en cada push a main.
+# CI del frontend: se ejecuta en cada PR hacia develop o main, y el CD (cd.yml) lo
+# llama como primer job de cada liberación a main.
 # Sin filtro de rutas: cuando este check sea obligatorio, un workflow que no se
 # ejecuta dejaría el PR esperando para siempre.
 name: CI
@@ -6,8 +7,7 @@ name: CI
 on:
   pull_request:
     branches: [develop, main]
-  push:
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
 
 concurrency:
