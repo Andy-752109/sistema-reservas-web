@@ -56,6 +56,13 @@ docker run --rm -p 8080:80 \
 
 El workflow **Docker** construye la imagen para `linux/amd64` en cada PR, sin publicarla; el CD (#53) la publica en Docker Hub como `<usuario>/reservas-web`.
 
+## Sesión y rutas
+
+- `/login` y `/registro` son públicas. Las demás rutas pasan por `RutaPrivada`: sin sesión, mandan al login y después regresan a donde iba el usuario.
+- `POST /login` devuelve un JWT que se guarda en `localStorage` (`reservas.token`). Todas las peticiones de `src/api/cliente.ts` lo envían como `Authorization: Bearer`.
+- Si la API responde 401, la sesión se cierra sola y se vuelve al login. El token también se descarta al vencer (`exp`).
+- El registro (`POST /usuarios`) siempre crea un estudiante e inicia sesión enseguida.
+
 ## Despliegue continuo
 
 Cada liberación a `main` dispara [`.github/workflows/cd.yml`](.github/workflows/cd.yml):
