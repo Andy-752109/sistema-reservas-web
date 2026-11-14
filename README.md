@@ -55,3 +55,51 @@ docker run --rm -p 8080:80 \
 ```
 
 El workflow **Docker** construye la imagen para `linux/amd64` en cada PR, sin publicarla; el CD (#53) la publica en Docker Hub como `<usuario>/reservas-web`.
+
+## Mis reservas — preparación del issue #38
+
+`src/pages/MisReservas.tsx` prepara el historial personal con carga, lista vacía,
+errores con reintento y estados ACTIVA, CANCELADA y FINALIZADA. Muestra el espacio
+por su identificador (la respuesta de reservas no incluye el nombre) y los horarios
+en `America/Mexico_City`. Solo ofrece cancelar reservas ACTIVAS, pide confirmación,
+impide envíos duplicados y conserva la fila con el estado devuelto por el servidor.
+Un error al cancelar mantiene el estado previo y permite reintentar.
+
+`src/reservas/api-reservas.ts` consume `GET /reservas` y `DELETE /reservas/:id`
+mediante una función `pedir` compatible con el cliente del login #34 / PR Web #6.
+La pantalla recibe `usuarioId` de la sesión y limita la lista a sus reservas;
+esto también se aplica a ADMIN, a quien la API devuelve todas las reservas.
+El filtrado visual no sustituye los permisos de propiedad que verifica el backend.
+
+**Integración pendiente:** al preparar esta rama desde `develop`, el PR Web #6
+todavía no está fusionado. No se duplica el login ni se altera `App.tsx`: esta
+pantalla aún no está conectada al router ni accesible en la aplicación principal.
+El issue #38 no está terminado hasta integrar y probar el flujo autenticado.
+
+Después de fusionar el #6 y actualizar esta rama, reutilizar su cliente y contexto:
+
+```tsx
+import { pedir } from './api/cliente'
+import { useAuth } from './auth/AuthContext'
+import MisReservas from './pages/MisReservas'
+import { crearApiReservas } from './reservas/api-reservas'
+
+// Mantener la identidad del adaptador estable entre renders.
+const apiReservas = crearApiReservas(pedir)
+
+function PaginaMisReservas() {
+  const { usuario } = useAuth()
+  if (!usuario) return null
+  return <MisReservas api={apiReservas} usuarioId={usuario.id} />
+}
+```
+
+Registrar `/mis-reservas` dentro de `RutaPrivada` y añadir un enlace en la navegación
+de la sesión. `pedir` conserva la responsabilidad de configurar la URL runtime,
+enviar Bearer y cerrar la sesión ante 401. Al desmontar la pantalla o cambiar de
+cuenta se abortan las peticiones y se ignoran respuestas antiguas.
+
+Pruebas: `npm test` cubre la pantalla con un servicio controlado y el contrato del
+adaptador; no usa cuentas ni modifica reservas en Azure. La integración posterior
+debe comprobar redirección al login, Bearer, listado propio y cancelación en una
+base local o de pruebas con datos desechables, nunca usando reservas reales de Prod.
