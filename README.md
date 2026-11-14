@@ -21,7 +21,7 @@ La aplicación queda en <http://localhost:5173>.
 
 ## Integración continua
 
-El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada PR hacia `develop` o `main`, en cada push a `main` y a mano. Ejecuta `npm ci`, `npm run lint`, `npm test` y `npm run build` con Node 22. Los resultados de las pruebas se publican como el check **Resultados de pruebas (Vitest)** y se guardan 14 días como artefacto `reportes-pruebas`.
+El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada PR hacia `develop` o `main`, a mano y como primer paso del CD. Ejecuta `npm ci`, `npm run lint`, `npm test` y `npm run build` con Node 22. Los resultados de las pruebas se publican como el check **Resultados de pruebas (Vitest)** y se guardan 14 días como artefacto `reportes-pruebas`.
 
 ## Comandos
 
@@ -62,3 +62,17 @@ El workflow **Docker** construye la imagen para `linux/amd64` en cada PR, sin pu
 - `POST /login` devuelve un JWT que se guarda en `localStorage` (`reservas.token`). Todas las peticiones de `src/api/cliente.ts` lo envían como `Authorization: Bearer`.
 - Si la API responde 401, la sesión se cierra sola y se vuelve al login. El token también se descarta al vencer (`exp`).
 - El registro (`POST /usuarios`) siempre crea un estudiante e inicia sesión enseguida.
+
+## Despliegue continuo
+
+Cada liberación a `main` dispara [`.github/workflows/cd.yml`](.github/workflows/cd.yml):
+
+```
+push a main ─► Build y pruebas ─► Imagen Docker (tag del SHA) ─► Dev + smoke test
+                                                               └─► aprobación manual ─► Prod + smoke test
+```
+
+- Dev y Prod reciben **la misma imagen**; `API_URL` y `AMBIENTE` son app settings de cada Web App (Terraform) y `APP_VERSION` es el SHA corto del commit, que aparece en el pie de página.
+- Prod espera la aprobación de un integrante (environment `production`).
+- El smoke test exige que `config.js` tenga la versión, el ambiente y la API correctos, que la SPA responda en `/` y `/login`, y que la API del mismo ambiente esté arriba y acepte este origen por CORS.
+- Azure se autentica con OIDC, sin contraseñas guardadas en GitHub.
