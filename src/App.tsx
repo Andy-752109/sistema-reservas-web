@@ -7,6 +7,7 @@ import Inicio from './pages/Inicio'
 import Login from './pages/Login'
 import Registro from './pages/Registro'
 import PaginaMisReservas from './pages/PaginaMisReservas'
+import ReservarEspacio from './pages/ReservarEspacio'
 
 // El router (BrowserRouter) se monta en main.tsx; así las pruebas pueden usar MemoryRouter.
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
           <Route element={<RutaPrivada />}>
             <Route path="/" element={<Inicio />} />
             <Route path="/mis-reservas" element={<PaginaMisReservas />} />
+            <Route path="/espacios/:id/reservar" element={<ReservarEspacio />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

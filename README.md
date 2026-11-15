@@ -99,6 +99,53 @@ npm.cmd test -- src/MisReservas.local.test.tsx
 Remove-Item Env:PRUEBA_API_LOCAL_URL, Env:PRUEBA_ESPACIO_ID
 ```
 
+## Disponibilidad y reserva — issue #37
+
+El catálogo (#36) puede enlazar cada espacio a **`/espacios/:id/reservar`**, por
+ejemplo `/espacios/3/reservar`. Esta ruta ya está dentro de `RutaPrivada`: sin sesión
+redirige al login y después regresa al formulario. No depende de que el catálogo
+esté implementado y no modifica su pantalla provisional.
+
+Consulta `GET /espacios/:id` para mostrar nombre, tipo, capacidad y ubicación, y
+`GET /espacios/:id/disponibilidad?fecha=YYYY-MM-DD` al cargar, cambiar fecha o
+reintentar. Muestra la zona horaria entregada por la API y permite escoger un bloque
+libre y un intervalo dentro de él, con opciones cada 15 minutos y los extremos
+del bloque. El inicio debe ser anterior al fin. Los valores enviados son instantes
+ISO UTC derivados de las respuestas con offset, no horas interpretadas en la zona
+del equipo; la fecha inicial usa Ciudad de México.
+
+`POST /reservas` envía únicamente `{ espacioId, inicio, fin }` mediante el cliente
+autenticado existente. Mientras espera bloquea envíos duplicados y cambios de
+fecha/horario. Al confirmar muestra el número de reserva y un enlace a “Mis
+reservas”; también permite consultar disponibilidad nuevamente para otra reserva.
+Ante un 409 conserva la fecha, explica el conflicto, borra la selección anterior y
+recarga los bloques antes de permitir otro intento. No asume que disponibilidad
+equivale a apartar un horario; la API valida el traslape al crear.
+
+Incluye estados de carga, fecha inválida, ausencia de bloques, error de consulta con
+reintento y errores de creación. El cliente reutilizado maneja el 401 cerrando sesión.
+Las respuestas tardías de una consulta anterior se ignoran al cambiar fecha o salir.
+No modifica endpoints, horarios de operación ni reglas de negocio del backend.
+
+`npm test` cubre los flujos con respuestas HTTP controladas y las conversiones de
+horarios. La prueba opcional `src/ReservarEspacio.local.test.tsx` usa API y PostgreSQL
+locales: registra dos cuentas desechables, inicia sesión desde el formulario,
+consulta disponibilidad, hace que otra cuenta ocupe el horario y comprueba el 409,
+la recarga y la creación en el siguiente intervalo. Verifica la persistencia mediante
+GET y la navegación a “Mis reservas”. Se omite por defecto.
+
+Para repetirla, preparar primero una API local con base temporal migrada y un espacio
+activo **sin reservas** con horario 07:00–21:00 en `America/Mexico_City`. Solo admite
+HTTP en localhost; no usar la base habitual ni cuentas de Azure. La base temporal
+debe eliminarse al terminar. PowerShell:
+
+```powershell
+$env:PRUEBA_RESERVAR_API_URL='http://127.0.0.1:4307'
+$env:PRUEBA_RESERVAR_ESPACIO_ID='1' # ID real del espacio temporal
+npm.cmd test -- src/ReservarEspacio.local.test.tsx
+Remove-Item Env:PRUEBA_RESERVAR_API_URL, Env:PRUEBA_RESERVAR_ESPACIO_ID
+```
+
 ## Sesión y rutas
 
 - `/login` y `/registro` son públicas. Las demás rutas pasan por `RutaPrivada`: sin sesión, mandan al login y después regresan a donde iba el usuario.

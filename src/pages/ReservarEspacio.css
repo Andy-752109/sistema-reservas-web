@@ -1,0 +1,11 @@
+.reservar-espacio { width: min(100%, 48rem); margin: 0 auto; }
+.reservar-espacio h1 { font-size: 1.8rem; }
+.reservar-fecha, .reservar-formulario label { display: flex; flex-direction: column; gap: 0.4rem; max-width: 20rem; }
+.reservar-bloques { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+.reservar-bloques button { min-height: 44px; }
+.reservar-bloques [aria-pressed='true'] { outline: 3px solid var(--acento); outline-offset: 2px; }
+.reservar-formulario { display: grid; gap: 1rem; padding: 1rem; border: 1px solid var(--borde); border-radius: 0.5rem; }
+.reservar-formulario select { font: inherit; padding: 0.5rem; color: var(--texto); background: var(--fondo); border: 1px solid var(--borde); border-radius: 0.4rem; }
+.reservar-espacio [role='alert'] { color: var(--error); }
+.reservar-espacio section button { display: block; margin-top: 1rem; }
+.reservar-espacio :is(button, select, input, a):focus-visible { outline: 3px solid var(--acento); outline-offset: 3px; }
