@@ -12,9 +12,12 @@ export default function Layout() {
           Sistema de Reservas
         </Link>
         {usuario && (
-          <button type="button" onClick={cerrarSesion}>
-            Cerrar sesión
-          </button>
+          <nav aria-label="Navegación de la sesión">
+            <Link to="/mis-reservas">Mis reservas</Link>
+            <button type="button" onClick={cerrarSesion}>
+              Cerrar sesión
+            </button>
+          </nav>
         )}
       </header>
       <div className="contenido">

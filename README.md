@@ -56,6 +56,49 @@ docker run --rm -p 8080:80 \
 
 El workflow **Docker** construye la imagen para `linux/amd64` en cada PR, sin publicarla; el CD (#53) la publica en Docker Hub como `<usuario>/reservas-web`.
 
+## Mis reservas — issue #38
+
+La ruta protegida `/mis-reservas`, accesible desde la navegación de la sesión,
+lista el historial del usuario y permite cancelar reservas ACTIVAS con confirmación.
+Consume `GET /reservas` y `DELETE /reservas/:id` mediante el cliente `pedir` del login
+(#34 / PR Web #6), que configura la URL por ambiente, envía Bearer y limpia la sesión
+ante un 401. Sin sesión se redirige a login y, al ingresar, se regresa al historial.
+
+La pantalla obtiene `usuarioId` del contexto de autenticación, también para ADMIN:
+la API le devuelve todas las reservas, pero “Mis reservas” muestra solo las suyas.
+El backend sigue verificando permisos y propiedad en cada operación.
+
+Se muestran los estados ACTIVA, CANCELADA y FINALIZADA, el identificador del espacio
+(la API no incluye su nombre en esta respuesta) y los horarios en
+`America/Mexico_City`. Incluye carga, lista vacía, reintentos y errores. Al cancelar,
+bloquea envíos duplicados, conserva la fila y usa el estado devuelto por la API.
+Si la petición falla, mantiene el estado previo y permite reintentar.
+
+El adaptador se crea una sola vez en `PaginaMisReservas.tsx`. Al salir o cambiar de
+cuenta se abortan las peticiones y se ignoran respuestas antiguas. Los estilos
+reutilizan las variables de la aplicación y la navegación admite pantallas pequeñas.
+
+`npm test` cubre el componente, el adaptador y la integración del router, sesión y
+cliente HTTP con respuestas controladas: login y regreso al historial, URL runtime,
+Bearer, listado personal, cancelación, 401, 403, cierre de sesión y expiración local.
+Estas pruebas no usan cuentas ni alteran reservas en Azure.
+
+La prueba opcional `src/MisReservas.local.test.tsx` usa peticiones HTTP reales y
+se omite por defecto. Requiere una API local contra una base temporal migrada y
+un espacio activo sin reservas en el intervalo de prueba. Crea una cuenta y una
+reserva de prueba, inicia sesión desde el formulario, cancela desde el historial
+y verifica el estado persistido. Al terminar debe eliminarse la base temporal;
+no debe apuntarse a la base de desarrollo habitual. Solo admite HTTP en localhost.
+
+Ejemplo en PowerShell, después de preparar la API y la base desechable:
+
+```powershell
+$env:PRUEBA_API_LOCAL_URL='http://127.0.0.1:4308'
+$env:PRUEBA_ESPACIO_ID='1' # ID real del espacio en esa base temporal
+npm.cmd test -- src/MisReservas.local.test.tsx
+Remove-Item Env:PRUEBA_API_LOCAL_URL, Env:PRUEBA_ESPACIO_ID
+```
+
 ## Sesión y rutas
 
 - `/login` y `/registro` son públicas. Las demás rutas pasan por `RutaPrivada`: sin sesión, mandan al login y después regresan a donde iba el usuario.
