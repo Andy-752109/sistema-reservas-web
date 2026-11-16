@@ -1,0 +1,115 @@
+# Despliega una imagen ya publicada en la Web App de un ambiente y la comprueba.
+# Lo llama cd.yml una vez por ambiente. Los datos de cada ambiente son variables
+# del environment de GitHub: WEB_WEBAPP_NAME, API_URL y AMBIENTE.
+name: Deploy
+
+on:
+  workflow_call:
+    inputs:
+      ambiente:
+        description: Environment de GitHub (development o production)
+        type: string
+        required: true
+      imagen:
+        description: Imagen con el tag del SHA, p. ej. usuario/reservas-web:abc1234
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    name: Desplegar
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # production tiene aprobación obligatoria y solo acepta main.
+    environment:
+      name: ${{ inputs.ambiente }}
+      url: ${{ steps.datos.outputs.url }}
+    env:
+      APP: ${{ vars.WEB_WEBAPP_NAME }}
+      RG: ${{ vars.AZURE_RESOURCE_GROUP }}
+      API_URL: ${{ vars.API_URL }}
+      AMBIENTE: ${{ vars.AMBIENTE }}
+      IMAGEN: ${{ inputs.imagen }}
+    steps:
+      - name: Datos del ambiente
+        id: datos
+        run: |
+          {
+            echo "url=https://${APP}.azurewebsites.net"
+            # Versión que muestra el footer: el SHA corto, igual que el tag de la imagen.
+            echo "version=${GITHUB_SHA::7}"
+          } >> "$GITHUB_OUTPUT"
+
+      # OIDC: Azure confía en el token de este job por su environment; no hay contraseñas.
+      - uses: azure/login@v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # Al arrancar, el contenedor genera config.js con API_URL, AMBIENTE y APP_VERSION.
+      - name: Desplegar la imagen
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: ${{ vars.WEB_WEBAPP_NAME }}
+          images: ${{ inputs.imagen }}
+
+      # config.js la devuelve como "version". Va después del despliegue: si fuera antes,
+      # Azure reiniciaría con la imagen vieja y la versión nueva, y el smoke test pasaría
+      # aunque la imagen nueva no arrancara.
+      - name: Registrar la versión (APP_VERSION)
+        env:
+          VERSION: ${{ steps.datos.outputs.version }}
+        run: az webapp config appsettings set -g "$RG" -n "$APP" --settings "APP_VERSION=${VERSION}" -o none
+
+      - name: Smoke test
+        env:
+          URL: ${{ steps.datos.outputs.url }}
+          VERSION: ${{ steps.datos.outputs.version }}
+        run: |
+          # App Service tarda en descargar la imagen y reiniciar: hasta 10 minutos.
+          for intento in $(seq 1 60); do
+            config=$(curl -s -m 10 "$URL/config.js" || true)
+            if echo "$config" | grep -q "version: \"${VERSION}\""; then
+              echo "✅ config.js:"; echo "$config"
+              break
+            fi
+            echo "Intento ${intento}: ${config:-sin respuesta}"
+            sleep 10
+          done
+          echo "$config" | grep -q "version: \"${VERSION}\"" || { echo "::error::config.js no responde con la versión ${VERSION}"; exit 1; }
+          echo "$config" | grep -q "ambiente: \"${AMBIENTE}\"" || { echo "::error::config.js no indica el ambiente ${AMBIENTE}"; exit 1; }
+          echo "$config" | grep -q "apiUrl: \"${API_URL}\"" || { echo "::error::config.js no apunta a ${API_URL}"; exit 1; }
+
+          # nginx sirve la SPA: una ruta del cliente debe devolver index.html, no 404.
+          for ruta in / /login; do
+            codigo=$(curl -s -o "$RUNNER_TEMP/pagina.html" -w '%{http_code}' -m 10 "$URL$ruta")
+            [ "$codigo" = "200" ] && grep -q '<div id="root">' "$RUNNER_TEMP/pagina.html" \
+              || { echo "::error::${ruta} respondió ${codigo} sin la SPA"; exit 1; }
+          done
+          echo "✅ La SPA responde en / y /login"
+
+          # Integración: la API de este ambiente está arriba y su CORS acepta este web.
+          curl -s -m 10 "$API_URL/health" | grep -q '"database":"up"' \
+            || { echo "::error::La API ${API_URL} no responde con la base arriba"; exit 1; }
+          origen=$(curl -s -m 10 -o /dev/null -D - -X OPTIONS "$API_URL/login" \
+            -H "Origin: ${URL}" -H "Access-Control-Request-Method: POST" \
+            | tr -d '\r' | awk -F': ' 'tolower($1)=="access-control-allow-origin"{print $2}')
+          [ "$origen" = "$URL" ] || { echo "::error::El CORS de la API no acepta ${URL} (respondió '${origen}')"; exit 1; }
+          echo "✅ La API ${API_URL} está arriba y acepta este web"
+
+      - name: Resumen
+        env:
+          URL: ${{ steps.datos.outputs.url }}
+          VERSION: ${{ steps.datos.outputs.version }}
+        run: |
+          {
+            echo "### ${{ inputs.ambiente }}"
+            echo "- Imagen: \`${IMAGEN}\`"
+            echo "- Web: ${URL} (\`${AMBIENTE}\`, versión \`${VERSION}\`)"
+            echo "- API: ${API_URL} con la base de datos arriba y CORS para este web"
+          } >> "$GITHUB_STEP_SUMMARY"
