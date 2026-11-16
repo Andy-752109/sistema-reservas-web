@@ -13,6 +13,7 @@ export default function Layout() {
         </Link>
         {usuario && (
           <nav aria-label="Navegación de la sesión">
+            <Link to="/espacios">Espacios</Link>
             <Link to="/mis-reservas">Mis reservas</Link>
             <button type="button" onClick={cerrarSesion}>
               Cerrar sesión
