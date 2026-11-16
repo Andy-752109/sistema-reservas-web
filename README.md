@@ -21,7 +21,7 @@ La aplicación queda en <http://localhost:5173>.
 
 ## Integración continua
 
-El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada PR hacia `develop` o `main`, a mano y como primer paso del CD. Ejecuta `npm ci`, `npm run lint`, `npm test` y `npm run build` con Node 22. Los resultados de las pruebas se publican como el check **Resultados de pruebas (Vitest)** y se guardan 14 días como artefacto `reportes-pruebas`.
+El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada PR hacia `develop` o `main`, a mano y como primer paso del CD. Ejecuta `npm ci`, `npm run lint`, `npm run test:cov` (pruebas con cobertura; falla si baja de 70 %) y `npm run build` con Node 22. La tabla de cobertura aparece en el resumen del run y el reporte HTML se guarda en el artefacto `reportes-pruebas`. Los resultados de las pruebas se publican como el check **Resultados de pruebas (Vitest)** y se guardan 14 días como artefacto `reportes-pruebas`.
 
 ## Comandos
 
@@ -31,6 +31,7 @@ El workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) corre en cada
 | `npm run build` | Compila TypeScript y genera la versión de producción en `dist/` |
 | `npm run lint` | Revisa el código con ESLint |
 | `npm test` | Corre las pruebas unitarias con Vitest |
+| `npm run test:cov` | Corre las pruebas y mide la cobertura (reporte en `coverage/index.html`) |
 ## Configuración por ambiente
 
 La URL de la API, el ambiente y la versión **no** se fijan al compilar: se leen al abrir la página desde `config.js`. Así la misma imagen de Docker sirve en Dev y en Prod.
