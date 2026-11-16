@@ -18,7 +18,7 @@ export default function ReservarEspacio() {
   const { id } = useParams()
   const espacioId = Number(id)
   if (!id || !/^\d+$/.test(id) || !Number.isSafeInteger(espacioId) || espacioId < 1 || espacioId > 2147483647) {
-    return <main><h1>Reservar espacio</h1><p role="alert">El identificador del espacio no es válido.</p><Link to="/">Volver al catálogo</Link></main>
+    return <main><h1>Reservar espacio</h1><p role="alert">El identificador del espacio no es válido.</p><Link to="/espacios">Volver al catálogo</Link></main>
   }
   return <FormularioReserva key={espacioId} espacioId={espacioId} />
 }
@@ -93,7 +93,7 @@ function FormularioReserva({ espacioId }: { espacioId: number }) {
 
   return (
     <main className="reservar-espacio">
-      <Link to="/">Volver al catálogo</Link>
+      <Link to="/espacios">Volver al catálogo</Link>
       <h1>{carga.estado === 'lista' ? `Reservar: ${carga.espacio.nombre}` : 'Reservar espacio'}</h1>
       {creada ? (
         <section>

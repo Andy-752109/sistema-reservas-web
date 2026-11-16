@@ -187,3 +187,20 @@ test('tras crear se puede consultar disponibilidad nueva para otra reserva', asy
   expect(await screen.findByText('No hay horarios disponibles para esta fecha.')).toBeTruthy()
   expect(screen.queryByText('Reserva #42 creada correctamente.')).toBeNull()
 })
+
+test('catálogo, formulario y Mis reservas conservan su navegación al integrar las rutas', async () => {
+  const fetch = simularFetch(respuestaJson([espacio]), respuestaJson(espacio), respuestaJson(disponibilidad), respuestaJson(creada, 201), respuestaJson([creada]))
+  abrir('/espacios')
+  fireEvent.click(await screen.findByRole('link', { name: 'Ver horarios y reservar' }))
+  await elegir()
+  expect(screen.getByRole('link', { name: 'Volver al catálogo' }).getAttribute('href')).toBe('/espacios')
+  fireEvent.click(screen.getByRole('button', { name: 'Confirmar reserva' }))
+  await waitFor(() => expect(screen.getByRole('status').textContent).toContain('creada correctamente'))
+  fireEvent.click(screen.getByRole('link', { name: 'Ver mis reservas' }))
+  expect(await screen.findByText('Reserva #42')).toBeTruthy()
+  expect(fetch.mock.calls.map(([url]) => String(url).split('?')[0])).toEqual([
+    'http://localhost:3000/espacios', 'http://localhost:3000/espacios/3',
+    'http://localhost:3000/espacios/3/disponibilidad',
+    'http://localhost:3000/reservas', 'http://localhost:3000/reservas',
+  ])
+})

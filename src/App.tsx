@@ -8,6 +8,7 @@ import Login from './pages/Login'
 import Registro from './pages/Registro'
 import PaginaMisReservas from './pages/PaginaMisReservas'
 import ReservarEspacio from './pages/ReservarEspacio'
+import PaginaCatalogo from './pages/PaginaCatalogo'
 
 // El router (BrowserRouter) se monta en main.tsx; así las pruebas pueden usar MemoryRouter.
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
           <Route path="/registro" element={<Registro />} />
           <Route element={<RutaPrivada />}>
             <Route path="/" element={<Inicio />} />
+            <Route path="/espacios" element={<PaginaCatalogo />} />
             <Route path="/mis-reservas" element={<PaginaMisReservas />} />
             <Route path="/espacios/:id/reservar" element={<ReservarEspacio />} />
           </Route>
