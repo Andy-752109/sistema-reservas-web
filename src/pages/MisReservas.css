@@ -1,40 +1,52 @@
 .mis-reservas {
-  width: min(100% - 2rem, 58rem);
-  margin: 2rem auto;
-  color: var(--texto, #374151);
+  width: min(100%, 58rem);
+  margin: 0 auto;
+  color: var(--texto);
   text-align: left;
 }
 
-.mis-reservas h1 { font-size: 2rem; }
-.mis-reservas h2 { margin: 0; font-size: 1.2rem; }
-.mis-reservas-zona { font-size: 0.875rem; }
-.mis-reservas-lista { display: grid; gap: 1rem; list-style: none; padding: 0; }
+.mis-reservas header { margin-bottom: 24px; }
+.mis-reservas header p { margin: 0; }
+.mis-reservas h2 { margin: 0; font-size: 1.15rem; }
+.mis-reservas-zona { margin-top: 4px !important; font-size: 0.85rem; opacity: 0.8; }
+.mis-reservas-lista { display: grid; gap: 16px; list-style: none; padding: 0; margin: 0; }
 .mis-reservas article {
-  border: 1px solid var(--borde, #cbd5e1);
-  border-radius: 0.75rem;
-  padding: 1.25rem;
+  padding: 22px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
 }
+.mis-reservas article > p { margin: 6px 0 0; }
 .mis-reservas-titulo, .mis-reservas-acciones { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
 .mis-reservas-titulo { justify-content: space-between; }
-.mis-reservas-estado { border-radius: 1rem; padding: 0.2rem 0.75rem; font-size: 0.8rem; font-weight: 700; }
-.mis-reservas .estado-activa { color: #14532d; background: #dcfce7; }
-.mis-reservas .estado-cancelada { color: #7f1d1d; background: #fee2e2; }
-.mis-reservas .estado-finalizada { color: #1e3a8a; background: #dbeafe; }
-.mis-reservas dl { display: flex; flex-wrap: wrap; gap: 1rem 2rem; }
-.mis-reservas dt { font-weight: 600; }
-.mis-reservas dd { margin: 0.25rem 0 0; }
+.mis-reservas-estado { border-radius: 999px; padding: 0.25rem 0.8rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.04em; }
+.mis-reservas .estado-activa { color: #067647; background: #dcfae6; }
+.mis-reservas .estado-cancelada { color: #b42318; background: #fee4e2; }
+.mis-reservas .estado-finalizada { color: #3538cd; background: #e0eaff; }
+.mis-reservas dl {
+  display: flex; flex-wrap: wrap; gap: 1rem 2.5rem;
+  margin: 16px 0; padding: 14px 16px;
+  border-radius: var(--radio-chico); background: var(--superficie-2);
+}
+.mis-reservas dt { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.mis-reservas dd { margin: 0.2rem 0 0; color: var(--titulo); font-weight: 600; }
 .mis-reservas button {
   min-height: 2.75rem;
   padding: 0.65rem 1rem;
-  border: 1px solid currentColor;
-  border-radius: 0.4rem;
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  font: inherit;
+  border: 1px solid var(--borde);
+  background: var(--superficie);
+  color: var(--titulo);
 }
-.mis-reservas button:focus-visible { outline: 3px solid var(--acento, #1f4e79); outline-offset: 3px; }
-.mis-reservas button:disabled { opacity: 0.6; cursor: wait; }
-.mis-reservas-confirmacion { margin-top: 1rem; padding: 1rem; background: var(--superficie, #f9fafb); border-radius: 0.5rem; }
-.mis-reservas [role='alert'] { color: #b91c1c; }
-@media (prefers-color-scheme: dark) { .mis-reservas [role='alert'] { color: #fca5a5; } }
+.mis-reservas button:hover:not(:disabled) { background: var(--superficie-2); }
+.mis-reservas button:disabled { cursor: wait; }
+.mis-reservas-confirmacion { margin-top: 1rem; padding: 1rem; background: var(--superficie-2); border-radius: var(--radio-chico); }
+.mis-reservas-confirmacion p { margin-top: 0; }
+.mis-reservas [role='alert'] { color: var(--error); }
+.mis-reservas [role='status'] { padding: 10px 14px; border-radius: var(--radio-chico); background: var(--acento-suave); color: var(--titulo); }
+
+@media (prefers-color-scheme: dark) {
+  .mis-reservas .estado-activa { color: #75e0a7; background: #053321; }
+  .mis-reservas .estado-cancelada { color: #fda29b; background: #55160c; }
+  .mis-reservas .estado-finalizada { color: #a4bcfd; background: #1f235b; }
+}

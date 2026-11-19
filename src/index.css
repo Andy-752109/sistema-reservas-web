@@ -1,30 +1,64 @@
+/* Colores y medidas de todo el sitio. Cambiar un valor aquí lo cambia en todas las páginas. */
 :root {
-  --texto: #374151;
-  --titulo: #111827;
-  --fondo: #ffffff;
-  --superficie: #f9fafb;
-  --borde: #e5e7eb;
-  --acento: #1f4e79;
+  --texto: #4b5470;
+  --titulo: #0f172a;
+  --fondo: #f5f6fb;
+  --superficie: #ffffff;
+  --superficie-2: #f0f2f8;
+  --borde: #e3e6ef;
+  --acento: #4f46e5;
+  --acento-fuerte: #4338ca;
+  --acento-suave: #eef0ff;
   --acento-texto: #ffffff;
   --error: #b42318;
+  --exito: #067647;
 
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
+  --cubiculo: #4f46e5;
+  --cubiculo-suave: #eef0ff;
+  --laboratorio: #0d9488;
+  --laboratorio-suave: #e6f7f5;
+  --cancha: #d97706;
+  --cancha-suave: #fdf3e2;
+
+  --radio: 14px;
+  --radio-chico: 10px;
+  --sombra: 0 1px 2px rgb(15 23 42 / 0.04), 0 4px 16px rgb(15 23 42 / 0.06);
+  --sombra-alta: 0 2px 4px rgb(15 23 42 / 0.05), 0 16px 40px rgb(15 23 42 / 0.12);
+  --degradado: linear-gradient(135deg, #312e81 0%, #4f46e5 55%, #7c3aed 100%);
+
+  font-family: 'Plus Jakarta Sans Variable', system-ui, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.55;
   color-scheme: light dark;
   color: var(--texto);
   background: var(--fondo);
+  -webkit-font-smoothing: antialiased;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --texto: #d1d5db;
-    --titulo: #f9fafb;
-    --fondo: #111827;
-    --superficie: #1f2937;
-    --borde: #374151;
-    --acento: #7fb2e5;
-    --acento-texto: #0b1726;
+    --texto: #b8bfd3;
+    --titulo: #f4f6fb;
+    --fondo: #0d1020;
+    --superficie: #161a2e;
+    --superficie-2: #1d2238;
+    --borde: #2a3050;
+    --acento: #8b8cf8;
+    --acento-fuerte: #a5a6fb;
+    --acento-suave: #23264a;
+    --acento-texto: #0d1020;
     --error: #f97066;
+    --exito: #47cd89;
+
+    --cubiculo: #8b8cf8;
+    --cubiculo-suave: #23264a;
+    --laboratorio: #2dd4bf;
+    --laboratorio-suave: #12302e;
+    --cancha: #fbbf24;
+    --cancha-suave: #33280f;
+
+    --sombra: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
+    --sombra-alta: 0 2px 4px rgb(0 0 0 / 0.3), 0 16px 40px rgb(0 0 0 / 0.4);
+    --degradado: linear-gradient(135deg, #1e1b4b 0%, #3730a3 55%, #6d28d9 100%);
   }
 }
 
@@ -36,22 +70,47 @@ body {
   margin: 0;
 }
 
-h1 {
+h1,
+h2,
+h3 {
   color: var(--titulo);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: clamp(1.8rem, 3vw, 2.3rem);
+  font-weight: 800;
+  margin: 0 0 0.5rem;
 }
 
 a {
   color: var(--acento);
+  font-weight: 600;
+  text-underline-offset: 3px;
 }
 
 button {
   font: inherit;
-  padding: 8px 16px;
+  font-weight: 600;
+  padding: 10px 18px;
   border: 0;
-  border-radius: 6px;
+  border-radius: var(--radio-chico);
   background: var(--acento);
   color: var(--acento-texto);
   cursor: pointer;
+  transition:
+    background 0.15s,
+    transform 0.15s,
+    box-shadow 0.15s;
+}
+
+button:hover:not(:disabled) {
+  background: var(--acento-fuerte);
+}
+
+button:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 button:disabled {
@@ -59,11 +118,34 @@ button:disabled {
   cursor: default;
 }
 
-input {
+input,
+select {
   font: inherit;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border: 1px solid var(--borde);
-  border-radius: 6px;
-  background: var(--fondo);
-  color: var(--texto);
+  border-radius: var(--radio-chico);
+  background: var(--superficie);
+  color: var(--titulo);
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--acento);
+  box-shadow: 0 0 0 4px var(--acento-suave);
+}
+
+:focus-visible {
+  outline: 3px solid var(--acento);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
 }

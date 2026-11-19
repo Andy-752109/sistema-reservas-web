@@ -1,30 +1,140 @@
+.catalogo-encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+
 .filtro {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 10px;
+  padding: 6px 6px 6px 14px;
+  border: 1px solid var(--borde);
+  border-radius: var(--radio);
+  background: var(--superficie);
+  box-shadow: var(--sombra);
+  color: var(--titulo);
+  font-weight: 600;
+}
+
+.filtro select {
+  min-width: 150px;
+  border-color: transparent;
+  background: var(--superficie-2);
 }
 
 .catalogo {
   list-style: none;
+  margin: 0;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 20px;
 }
 
 .tarjeta-espacio {
-  padding: 16px;
+  --color: var(--cubiculo);
+  --color-suave: var(--cubiculo-suave);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: 22px;
   border: 1px solid var(--borde);
-  border-radius: 8px;
+  border-radius: var(--radio);
   background: var(--superficie);
+  box-shadow: var(--sombra);
+  overflow: hidden;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+/* Franja de color arriba de cada tarjeta, según el tipo de espacio */
+.tarjeta-espacio::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 4px;
+  background: var(--color);
+}
+
+.tarjeta-espacio:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--sombra-alta);
+}
+
+.tipo-laboratorio {
+  --color: var(--laboratorio);
+  --color-suave: var(--laboratorio-suave);
+}
+
+.tipo-cancha {
+  --color: var(--cancha);
+  --color-suave: var(--cancha-suave);
+}
+
+.tarjeta-icono {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  background: var(--color-suave);
+  color: var(--color);
+}
+
+.tarjeta-icono svg {
+  width: 24px;
+  height: 24px;
 }
 
 .tarjeta-espacio h2 {
-  margin: 0 0 8px;
-  font-size: 18px;
+  margin: 0 0 10px;
+  font-size: 1.15rem;
 }
 
-.tarjeta-espacio p {
-  margin: 0 0 4px;
+.tarjeta-dato {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+}
+
+.tarjeta-dato svg {
+  color: var(--color);
+}
+
+.tarjeta-accion {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: auto;
+  padding: 10px 14px;
+  border-radius: var(--radio-chico);
+  background: var(--color-suave);
+  color: var(--color);
+  text-decoration: none;
+  transition: gap 0.15s;
+}
+
+.tarjeta-dato:last-of-type {
+  margin-bottom: 18px;
+}
+
+.tarjeta-accion:hover {
+  gap: 12px;
+}
+
+.estado-carga,
+.vacio {
+  padding: 40px;
+  border: 1px dashed var(--borde);
+  border-radius: var(--radio);
+  text-align: center;
 }
