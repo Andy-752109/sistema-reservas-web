@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { ErrorApi } from '../api/cliente'
 import { useAuth } from '../auth/AuthContext'
+import { IconoCalendario } from '../components/Iconos'
 
 export default function Login() {
   const { usuario, iniciarSesion } = useAuth()
@@ -39,40 +40,49 @@ export default function Login() {
 
   return (
     <main className="pantalla-auth">
-      <h1>Iniciar sesión</h1>
-      <form className="formulario" onSubmit={alEnviar}>
-        <label>
-          Correo
-          <input
-            type="email"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-            autoComplete="email"
-            required
-          />
-        </label>
-        <label>
-          Contraseña
-          <input
-            type="password"
-            value={contrasena}
-            onChange={(e) => setContrasena(e.target.value)}
-            autoComplete="current-password"
-            required
-          />
-        </label>
-        {error && (
-          <p className="error" role="alert">
-            {error}
-          </p>
-        )}
-        <button type="submit" disabled={enviando}>
-          {enviando ? 'Entrando…' : 'Entrar'}
-        </button>
-      </form>
-      <p>
-        ¿No tienes cuenta? <Link to="/registro">Regístrate</Link>
-      </p>
+      <aside className="auth-panel" aria-hidden="true">
+        <span className="marca-logo marca-logo-grande">
+          <IconoCalendario />
+        </span>
+        <p className="auth-panel-titulo">Sistema de Reservas</p>
+        <p>Aparta tu espacio en el campus en segundos.</p>
+      </aside>
+      <div className="auth-tarjeta">
+        <h1>Iniciar sesión</h1>
+        <form className="formulario" onSubmit={alEnviar}>
+          <label>
+            Correo
+            <input
+              type="email"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              autoComplete="email"
+              required
+            />
+          </label>
+          <label>
+            Contraseña
+            <input
+              type="password"
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
+              autoComplete="current-password"
+              required
+            />
+          </label>
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
+          <button type="submit" className="boton-ancho" disabled={enviando}>
+            {enviando ? 'Entrando…' : 'Entrar'}
+          </button>
+        </form>
+        <p>
+          ¿No tienes cuenta? <Link to="/registro">Regístrate</Link>
+        </p>
+      </div>
     </main>
   )
 }
