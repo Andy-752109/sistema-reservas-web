@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, useNavigate } from 'react-router'
 import { useAuth } from '../auth/AuthContext'
+import { IconoCalendario } from '../components/Iconos'
 
 export default function Registro() {
   const { usuario, registrarse } = useAuth()
@@ -30,52 +31,61 @@ export default function Registro() {
 
   return (
     <main className="pantalla-auth">
-      <h1>Crear cuenta</h1>
-      <form className="formulario" onSubmit={alEnviar}>
-        <label>
-          Nombre
-          <input
-            value={nombre}
-            onChange={(e) => setNombre(e.target.value)}
-            autoComplete="name"
-            maxLength={100}
-            required
-          />
-        </label>
-        <label>
-          Correo
-          <input
-            type="email"
-            value={correo}
-            onChange={(e) => setCorreo(e.target.value)}
-            autoComplete="email"
-            maxLength={254}
-            required
-          />
-        </label>
-        <label>
-          Contraseña (mínimo 8 caracteres)
-          <input
-            type="password"
-            value={contrasena}
-            onChange={(e) => setContrasena(e.target.value)}
-            autoComplete="new-password"
-            minLength={8}
-            required
-          />
-        </label>
-        {error && (
-          <p className="error" role="alert">
-            {error}
-          </p>
-        )}
-        <button type="submit" disabled={enviando}>
-          {enviando ? 'Creando cuenta…' : 'Crear cuenta'}
-        </button>
-      </form>
-      <p>
-        ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
-      </p>
+      <aside className="auth-panel" aria-hidden="true">
+        <span className="marca-logo marca-logo-grande">
+          <IconoCalendario />
+        </span>
+        <p className="auth-panel-titulo">Sistema de Reservas</p>
+        <p>Crea tu cuenta con tu correo y empieza a reservar.</p>
+      </aside>
+      <div className="auth-tarjeta">
+        <h1>Crear cuenta</h1>
+        <form className="formulario" onSubmit={alEnviar}>
+          <label>
+            Nombre
+            <input
+              value={nombre}
+              onChange={(e) => setNombre(e.target.value)}
+              autoComplete="name"
+              maxLength={100}
+              required
+            />
+          </label>
+          <label>
+            Correo
+            <input
+              type="email"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              autoComplete="email"
+              maxLength={254}
+              required
+            />
+          </label>
+          <label>
+            Contraseña (mínimo 8 caracteres)
+            <input
+              type="password"
+              value={contrasena}
+              onChange={(e) => setContrasena(e.target.value)}
+              autoComplete="new-password"
+              minLength={8}
+              required
+            />
+          </label>
+          {error && (
+            <p className="error" role="alert">
+              {error}
+            </p>
+          )}
+          <button type="submit" className="boton-ancho" disabled={enviando}>
+            {enviando ? 'Creando cuenta…' : 'Crear cuenta'}
+          </button>
+        </form>
+        <p>
+          ¿Ya tienes cuenta? <Link to="/login">Inicia sesión</Link>
+        </p>
+      </div>
     </main>
   )
 }
