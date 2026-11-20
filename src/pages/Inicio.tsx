@@ -58,6 +58,7 @@ export default function Inicio() {
         <div className="hero-texto">
           <span className="etiqueta">Espacios universitarios</span>
           <h1>Sistema de Reservas</h1>
+          <p>Reserva cubículos, laboratorios y canchas sin empalmes (Prueba).</p>
           <p className="hero-sesion">Sesión iniciada como {usuario?.rol.toLowerCase()}.</p>
           <div className="hero-acciones">
             <Link to="/espacios" className="boton">
